@@ -1,0 +1,96 @@
+﻿@page "/carForm"
+@page "/carForm/{id:int}"
+@using CRUD_WEBAPI_BLAZOR.Shared
+
+@inject ICarService _carService
+
+@if(Id == null)
+{
+    <PageTitle>Car</PageTitle>
+    <h3>Create a new Car</h3>
+}
+else
+{
+    <PageTitle>Car</PageTitle>
+    <h3>Edit @car.Model</h3>
+}
+
+<EditForm Model="car" OnSubmit="HandleSubmit">
+    <div>
+        <label for="model">Model</label>
+        <InputText id="model" @bind-Value="car.Model" class="form-control"></InputText>
+    </div>
+    <div>
+        <label for="engine">Engine</label>
+        <InputText id="engine" @bind-Value="car.Engine" class="form-control"></InputText>
+    </div>
+    <div>
+        <label for="color">Color</label>
+        <InputText id="color" @bind-Value="car.Color" class="form-control"></InputText>
+    </div>
+    <div>
+        <label for="year">Year</label>
+        <InputNumber id="year" @bind-Value="car.Year" class="form-control"></InputNumber>
+    </div>
+    <div>
+        <label>Manufacturer</label>
+        <InputSelect @bind-Value="car.ManufacturerId" class="form-select">
+           @foreach (var manufacturer in _carService.Manufacturers)
+           {
+               <option value="@manufacturer.Id">@manufacturer.Name</option>
+           }
+        </InputSelect>
+    </div>
+    <br/>
+        <button type="submit" class="btn btn-primary">@btnText</button>
+        @if(Id != null)
+        {        
+            <button type="button" class="btn btn-danger" @onclick="DeleteCar">Delete Car</button>
+        }
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    string btnText = string.Empty;
+
+    Car car = new Car { Manufacturer = new Manufacturer() };
+
+    protected override async Task OnInitializedAsync()
+    {
+        btnText = Id == null ? "Save New Car" : "Update Car";
+        await _carService.GetManufactures();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if(Id == null)
+        {
+            car.Manufacturer = _carService.Manufacturers[0];
+            car.ManufacturerId = car.Manufacturer.Id;
+        }
+        else
+        {
+            car = await _carService.GetSingleCar(Id);
+        }
+    }
+
+    async Task HandleSubmit()
+    {
+        if(Id == null)
+        {
+            await _carService.CreateCar(car);
+        }
+        else
+        {
+            await _carService.UpdateCar(car);
+        }
+    }
+
+    async Task DeleteCar()
+    {
+        await _carService.DeleteCar(car.Id);    
+    }
+}

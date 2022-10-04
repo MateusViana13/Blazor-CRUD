@@ -1,0 +1,53 @@
+﻿@page "/cars"
+
+@inject ICarService _carService
+@inject NavigationManager _navigationManager
+
+<PageTitle>Cars</PageTitle>
+
+<h3>Cars</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Model</th>
+            <th>Engine</th>
+            <th>Color</th>
+            <th>Year</th>
+            <th>Manufacturer</th>
+        </tr>
+    </thead>
+    <tbody>
+       @foreach (var car in _carService.Cars)
+       {
+           <tr>
+               <td>@car.Model</td>
+               <td>@car.Engine</td>
+               <td>@car.Color</td>
+               <td>@car.Year.ToString()</td>
+               <td>@car.Manufacturer.Name</td>
+               <td>
+                   <button class="btn btn-primary" @onclick="(() => ShowCar(car.Id))"><i class="oi oi-pencil"></i></button>
+               </td>
+           </tr>
+       }
+    </tbody>
+</table>
+<button class="btn btn-primary" @onclick="CreateCar">Create new Car</button>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await _carService.GetCars();
+    }
+
+    void ShowCar(int id)
+    {
+        _navigationManager.NavigateTo($"carForm/{id}");
+    }
+
+    void CreateCar()
+    {
+        _navigationManager.NavigateTo("carForm");
+    }
+}
